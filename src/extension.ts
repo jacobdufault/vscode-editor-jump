@@ -27,6 +27,9 @@ TODO: allow user-contributed shortcuts like
 TODO: write an extension that allows for modal shortcuts with the popup, then
       perhaps this extension can just leverage that? or it can be separate
 
+      specifically, we can have per-focus modals, ie, ctrl+d or something will
+      bring up a window with keybindings for the currently focused view
+
   "modals": [
     {
       "id": "myId",
@@ -272,14 +275,6 @@ async function editorJumpJump() {
 
     var shortcutGroups = [
       [
-        new Shortcut(';', 'previous editor').doNotRecordInHistory().withAction(() => {
-          let action = editorHistory[1];
-          if (action) {
-            cycleHistory();
-            return action.activate();
-          }
-          return new Promise<void>(resolve => resolve());
-        }),
         new Shortcut('q', 'search').withAction(() => command('workbench.view.search')),
         new Shortcut('w', 'git').withAction(() => command('workbench.view.scm')),
         new Shortcut('e', 'explorer').withAction(() => command('workbench.view.explorer')),
@@ -301,7 +296,17 @@ async function editorJumpJump() {
           await focusEditor(editor);
           await command('workbench.action.splitEditorDown');
         }),
-      ]
+      ],
+      [
+        new Shortcut(';', 'focus previous').doNotRecordInHistory().withAction(() => {
+          let action = editorHistory[1];
+          if (action) {
+            cycleHistory();
+            return action.activate();
+          }
+          return new Promise<void>(resolve => resolve());
+        }),
+      ],
     ]
     var shortcuts: Shortcut[] = flatten(shortcutGroups);
 
