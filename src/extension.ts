@@ -13,6 +13,12 @@ TODO: allow user-contributed shortcuts like
     "key": "B",
     "description": "bar",
     "command": "workbench.focusBar"
+  },
+  {
+    "key": "x",
+    "description": "close editor",
+    "selectEditor": true,
+    "command": "workbench.action.closeGroup",
   }
 ]
 */
