@@ -13,6 +13,10 @@
   "activationEvents": [
     "onCommand:editorJump.jump"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jacobdufault/vscode-editor-jump.git"
+  },
   "main": "./out/src/extension",
   "contributes": {
     "commands": [
