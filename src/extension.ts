@@ -321,6 +321,15 @@ async function editorJumpJump() {
         // see if the shortcut wants to capture an editor
         if (shortcut && shortcut.editorAction) {
           shortcutWithEditor = shortcut;
+
+          // Automatically activate a single editor.
+          if (editors.length == 1) {
+            resolve(editors[0].key);
+            input.dispose();
+            return;
+          }
+
+          // Otherwise prompt the user for the editor to use.
           input.title = `Select an editor to ${shortcut.description}`;
           input.items = [];
           input.value = '';
