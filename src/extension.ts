@@ -61,11 +61,6 @@ TODO: write an extension that allows for modal shortcuts with the popup, then
   each editor.
 */
 
-/*
-TODO: instead of caching the editor we should probably cache the editor group so
-      that even if the editor changes we still restore the right location
-*/
-
 // Decoration used to show hit target to switch window.
 const kDecoration = vscode.window.createTextEditorDecorationType({
   before: {
@@ -103,7 +98,7 @@ class ShownEditor {
 }
 
 class Shortcut {
-  editor: vscode.TextEditor | undefined;
+  viewColumn: vscode.ViewColumn | undefined;
   action: (() => Promise<void>) | undefined;
   editorAction: ((editor: vscode.TextEditor) => Promise<void>) | undefined;
   recordInHistory: boolean;
@@ -112,8 +107,8 @@ class Shortcut {
     this.recordInHistory = true;
   }
 
-  withEditor(editor: vscode.TextEditor) {
-    this.editor = editor;
+  withViewColumn(viewColumn: vscode.ViewColumn) {
+    this.viewColumn = viewColumn;
     return this;
   }
 
@@ -133,8 +128,8 @@ class Shortcut {
   }
 
   async activate() {
-    if (this.editor)
-      await focusEditor(this.editor);
+    if (this.viewColumn)
+      await focusViewColumn(this.viewColumn);
     if (this.action)
       await this.action();
   }
@@ -186,8 +181,17 @@ function makeDecorations(range: vscode.Range, label: string): Array<vscode.Decor
 
 // Focus the given editor.
 async function focusEditor(editor: vscode.TextEditor) {
-  if (editor)
-    await vscode.window.showTextDocument(editor.document, editor.viewColumn, false);
+  await vscode.window.showTextDocument(editor.document, editor.viewColumn, false);
+}
+
+// Focus a specific ViewColumn.
+async function focusViewColumn(viewColumn: vscode.ViewColumn) {
+  for (let editor of vscode.window.visibleTextEditors) {
+    if (editor.viewColumn == viewColumn) {
+      await focusEditor(editor);
+      return;
+    }
+  }
 }
 
 // Execute a command.
@@ -241,8 +245,8 @@ async function handle(
   // handle editor focus
   let editor = findEditor(editors, picked);
   if (editor) {
+    // history tracking happens in onDidChangeActiveTextEditor
     await focusEditor(editor);
-    pushHistory(new Shortcut('', `internally-focused editor ${editor.document.fileName}`).withEditor(editor));
     return;
   }
 }
@@ -340,6 +344,8 @@ async function editorJumpJump() {
           input.value = '';
           return;
         }
+
+        // handle the key without a specific editor
         resolve(value);
         input.dispose();
       });
@@ -362,9 +368,10 @@ export function activate(context: vscode.ExtensionContext) {
   // Track editor activations that happen outside of this extension.
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor(e => {
-      if (!e || editorHistory[0] && editorHistory[0].editor == e)
+      // If the same editor was focused don't track it again.
+      if (!e || !e.viewColumn || editorHistory[0] && editorHistory[0].viewColumn == e.viewColumn)
         return;
-      pushHistory(new Shortcut('', `externally-focused editor ${e.document.fileName}`).withEditor(e));
+      pushHistory(new Shortcut('', `ViewColumn ${e.viewColumn}`).withViewColumn(e.viewColumn));
     }));
 
   context.subscriptions.push(
