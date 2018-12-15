@@ -246,6 +246,9 @@ async function handle(
   let editor = findEditor(editors, picked);
   if (editor) {
     // history tracking happens in onDidChangeActiveTextEditor
+    // TODO: insert history here, onDidChangeActiveTextEditor is not called if
+    // we go from for example editorA->search->git->editorA since the active
+    // editor never changed
     await focusEditor(editor);
     return;
   }
