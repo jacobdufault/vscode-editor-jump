@@ -68,7 +68,10 @@ const kDecoration = vscode.window.createTextEditorDecorationType({
   before: {
     color: "#efefef",
     backgroundColor: "#555555",
-  }
+  },
+  // isWholeLine: true,
+  // color: "#646464",
+  // backgroundColor: "#DCDCDC4C",
 });
 
 // Is the quick pick window being shown?
